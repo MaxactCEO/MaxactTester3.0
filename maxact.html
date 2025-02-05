@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>     
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maxact</title>
+  <link rel="stylesheet" href="maxact.css">
+  <style>
+    /* Lägg till en övergripande container med padding */
+    #outerContainer {
+      padding: 10px; /* Lägg till marginal runt alla objekt */
+      box-sizing: border-box; /* Inkludera padding i elementets totala bredd och höjd */
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="outerContainer">
+    <div class="wrapper">
+      <img src="Vit logga.png" alt="Maxact logga" width="135" height="140">
+
+      <div class="Default">Default</div>
+      
+      <!-- Korrelationsruta -->
+      <div class="square">
+        <div class="sprint">Category</div>
+        No correlation has been found
+      </div>
+
+      <!-- Här placeras grafen -->
+      <div id="chart_div"></div>
+
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+      <!-- Ny container för mest frekventa vanor -->
+      <button onclick="myFunction()"><i class="fa-solid fa-angle-up"></i></button>
+      <div id="VisaVanor" style="display: none;"></div> <!-- Lägg till display: none för att dölja initialt -->
+
+      <button name="VisaVanor"></button>
+      <div id="habitStatsContainer" style="width: 100%; margin-bottom: 20px;"></div>
+
+      <div id="habitStatsContainer" class="repost-container"></div> 
+
+      <div id="frequentHabitsContainer" class="repost-container"></div> 
+
+      <button onclick="Form()">Lägg till ny vana</button>
+      <!-- Visa / dölja knappen till sektion 5 börjar här -->
+      <div id="ShowForm" style="display: none;"> <!-- Lägg till display: none för att dölja initialt -->
+
+        <center>
+          <hr>
+          <h3>Add new habit</h3> <!-- Ändra till h3 istället för h1 -->
+        </center>
+        
+        <form id="Enkät">
+          <!-- Kategori -->
+          <label for="Kategori">Category:</label>
+          <select id="Kategori" name="Kategori" required>
+            <option value="">Choose category</option>
+            <option value="Kost">Diet</option>
+            <option value="Kosttillskott">Dietary supplements</option>
+            <option value="Dryck">Beverage</option>
+            <option value="Träning">Training</option>
+            <option value="Fysisk aktivitet">Physical activity</option>
+            <option value="Fotbollsträning">Soccer practice</option>
+            <option value="Sömn">Sleep</option>
+            <option value="Övrigt">Other</option>
+          </select>
+
+          <!-- Dynamiska fält -->
+          <div id="dynamic-fields"></div>
+
+          <!-- Datumfält -->
+          <label for="Datum">Date:</label>
+          <input type="date" id="Datum" name="Datum" required>
+
+          <!-- Tidsfält -->
+          <label for="Tid">Time:</label>
+          <input type="time" id="Tid" name="Tid" required>
+
+          <!-- Beskrivning -->
+          <label for="Beskrivning">Description:</label>
+          <textarea id="Beskrivning" name="Beskrivning" rows="4" placeholder="Describe your habit"></textarea>
+
+          <!-- Skicka-knapp -->
+          <input type="submit" value="Send">
+        </form> 
+
+        <script>
+          function Form() {
+            var x = document.getElementById("ShowForm");
+            if (x.style.display === "none") {
+              x.style.display = "block";
+            } else {
+              x.style.display = "none";
+            }
+          }
+        </script>
+      </div>
+
+      <ul id="myMenu">
+        <center>
+          <hr>
+          <h3>Alla vanor</h3> <!-- Ändra till h3 istället för h1 -->
+        </center>
+        
+        <li><a href="#" onclick="filterCategory('all')">All</a></li>  <!-- Lägg till denna rad -->
+        <li><a href="#" onclick="filterCategory('Kost')">Diet</a></li>
+        <li><a href="#" onclick="filterCategory('Dryck')">Beverage</a></li>
+        <li><a href="#" onclick="filterCategory('Kosttillskott')">Kosttillskott</a></li>
+        <li><a href="#" onclick="filterCategory('Träning')">Träning</a></li>
+        <li><a href="#" onclick="filterCategory('Fysisk aktivitet')">Fysisk aktivitet</a></li>
+        <li><a href="#" onclick="filterCategory('Fotbollsträning')">Fotbollsträning</a></li>
+        <li><a href="#" onclick="filterCategory('Sömn')">Sömn</a></li>
+        <li><a href="#" onclick="filterCategory('Övrigt')">Övrigt</a></li>
+        <!-- ... resten av dina menyalternativ ... -->
+      </ul>
+
+      <!-- Lägg till en container för sökrutan -->
+      <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Sök vanor..." onkeyup="filterReposts()">
+      </div>
+
+      <!-- Repost Container -->
+      <div id="repostContainer" class="repost-container">
+        <!-- Exempel på repost-rutor -->
+        <div class="repost" data-category="Kost">Diet: 500 ml <button class="add-habit">Lägg till</button> <button class="remove-habit">Ta bort</button></div>
+        <div class="repost" data-category="Träning">Träning: 30 minuter <button class="add-habit">Lägg till</button> <button class="remove-habit">Ta bort</button></div>
+        <div class="repost" data-category="Sömn">Sömn: 8 timmar <button class="add-habit">Lägg till</button> <button class="remove-habit">Ta bort</button></div>
+        <!-- Lägg till fler repost-rutor här -->
+      </div>  
+    </div>
+  </div>
+
+  <script>
+    function myFunction() {
+      var visaVanor = document.getElementById("VisaVanor");
+      var showForm = document.getElementById("ShowForm");
+      var myMenu = document.getElementById("myMenu");
+      var addHabitButton = document.querySelector("button[onclick='Form()']");
+      var repostContainer = document.getElementById("repostContainer");
+      var searchContainer = document.querySelector(".search-container");
+
+      if (visaVanor.classList.contains("hidden")) {
+        visaVanor.classList.remove("hidden");
+        visaVanor.classList.add("visible");
+        showForm.classList.remove("hidden");
+        showForm.classList.add("visible");
+        myMenu.classList.remove("hidden");
+        myMenu.classList.add("visible");
+        addHabitButton.classList.remove("hidden");
+        addHabitButton.classList.add("visible");
+        repostContainer.classList.remove("hidden");
+        repostContainer.classList.add("visible");
+        searchContainer.classList.remove("hidden");
+        searchContainer.classList.add("visible");
+      } else {
+        visaVanor.classList.remove("visible");
+        visaVanor.classList.add("hidden");
+        showForm.classList.remove("visible");
+        showForm.classList.add("hidden");
+        myMenu.classList.remove("visible");
+        myMenu.classList.add("hidden");
+        addHabitButton.classList.remove("visible");
+        addHabitButton.classList.add("hidden");
+        repostContainer.classList.remove("visible");
+        repostContainer.classList.add("hidden");
+        searchContainer.classList.remove("visible");
+        searchContainer.classList.add("hidden");
+      }
+    }
+
+    function filterReposts() {
+      var input = document.getElementById('searchInput');
+      var filter = input.value.toLowerCase();
+      var repostContainer = document.getElementById('repostContainer');
+      var reposts = repostContainer.getElementsByClassName('repost');
+
+      for (var i = 0; i < reposts.length; i++) {
+        var repost = reposts[i];
+        if (repost.textContent.toLowerCase().indexOf(filter) > -1) {
+          repost.style.display = 'flex';
+        } else {
+          repost.style.display = 'none';
+        }
+      }
+    }
+
+    function filterCategory(category) {
+      var repostContainer = document.getElementById('repostContainer');
+      var reposts = repostContainer.getElementsByClassName('repost');
+
+      for (var i = 0; i < reposts.length; i++) {
+        var repost = reposts[i];
+        if (category === 'all' || repost.getAttribute('data-category') === category) {
+          repost.style.display = 'flex';
+        } else {
+          repost.style.display = 'none';
+        }
+      }
+    }
+  </script>
+
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script type="text/javascript">
+  </script>
+  <script src="macaxt.js"></script>
+</body>
+</html>
